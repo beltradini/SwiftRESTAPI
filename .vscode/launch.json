@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftRESTAPI}",
+            "name": "Debug SwiftRESTAPI",
+            "program": "${workspaceFolder:SwiftRESTAPI}/.build/debug/SwiftRESTAPI",
+            "preLaunchTask": "swift: Build Debug SwiftRESTAPI"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftRESTAPI}",
+            "name": "Release SwiftRESTAPI",
+            "program": "${workspaceFolder:SwiftRESTAPI}/.build/release/SwiftRESTAPI",
+            "preLaunchTask": "swift: Build Release SwiftRESTAPI"
+        }
+    ]
+}
