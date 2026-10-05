@@ -61,6 +61,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && apt-get -q install -y \
       libjemalloc2 \
       ca-certificates \
+      curl \
       tzdata \
 # If your app or its dependencies import FoundationNetworking, also install `libcurl4`.
       # libcurl4 \
@@ -85,6 +86,9 @@ USER vapor:vapor
 
 # Let Docker bind to port 8080
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl --fail --silent --show-error --max-time 4 http://127.0.0.1:8080/health || exit 1
 
 # Start the Vapor service when the image is run, default to listening on 8080 in production environment
 ENTRYPOINT ["./SwiftRESTAPI"]

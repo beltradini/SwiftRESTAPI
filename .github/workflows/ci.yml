@@ -1,0 +1,46 @@
+name: API validation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.3'
+      - name: Verify committed dependency lock
+        run: git ls-files --error-unmatch Package.resolved
+      - name: Run tests using locked dependencies
+        run: swift test --disable-automatic-resolution
+      - name: Check lock did not change
+        run: git diff --exit-code -- Package.resolved
+  container:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: |
+          docker compose config --quiet
+          API_DOMAIN=api.example.com ACME_EMAIL=admin@example.com docker compose -f compose.production.yml config --quiet
+      - name: Validate Caddy configuration
+        run: docker run --rm -e API_DOMAIN=api.example.com -e ACME_EMAIL=admin@example.com -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      - name: Build and wait for healthy container
+        run: docker compose up --build --detach --wait --wait-timeout 120
+      - name: Check HTTP contract
+        run: |
+          curl --fail --silent http://127.0.0.1:8080/health | python3 -c 'import json,sys; assert json.load(sys.stdin) == {"status":"ok"}'
+          test "$(curl --fail --silent http://127.0.0.1:8080/hello)" = 'Hello, world!'
+      - name: Container logs
+        if: failure()
+        run: docker compose logs
+      - name: Stop containers
+        if: always()
+        run: docker compose down

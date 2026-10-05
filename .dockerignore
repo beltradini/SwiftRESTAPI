@@ -1,2 +1,15 @@
 .build/
 .swiftpm/
+.git/
+.github/
+.vscode/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+.codex/
+.agents/
+.DS_Store
+DerivedData/
